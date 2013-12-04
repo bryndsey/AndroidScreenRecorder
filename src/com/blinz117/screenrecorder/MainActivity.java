@@ -3,7 +3,6 @@ package com.blinz117.screenrecorder;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -80,7 +79,7 @@ public class MainActivity extends Activity {
 		new RecordTask().execute(getTimeSliderVal());
 	}
 	
-	private boolean doRecord(int length)
+	private void doRecord(int length)
 	{
 		try {
 			
@@ -88,13 +87,16 @@ public class MainActivity extends Activity {
 		    if (!Environment.MEDIA_MOUNTED.equals(state))
 		    {
 		    	// couldn't access external storage
-		        return false;
+		        return;// false;
 		    }
 
-		    File parentDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+		    // @TODO: Apparently something doesn't like using a file path other than at the sdcard level...
+		    // Figure out why and fix it.
+/*		    File parentDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
 		    if (!parentDir.exists())
-		    	parentDir.mkdirs();
-		    String filePath = parentDir.getAbsolutePath() + "/test.mp4";
+		    	parentDir.mkdirs();*/
+		    
+		    String filePath = /*parentDir.getAbsolutePath() +*/ "/sdcard/test.mp4";
 
 			Process process;
 
@@ -106,11 +108,11 @@ public class MainActivity extends Activity {
 			// Close the terminal
 			os.writeBytes("exit\n");
 			os.flush();
-			os.close();
+			//os.close();
 
 			try {
 				process.waitFor();
-				return true;
+				//return true;
 
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -120,14 +122,14 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 		
-		return false;
+		//return false;
 	}
 	
-	private void endRecord(boolean success)
+	private void endRecord()
 	{
 		String message = "Recording finished!";
-		if (!success)
-			message = "Recording failed.";
+		//if (!success)
+		//	message = "Recording failed.";
     	toastMessage(message);
         enableUI(true);
 	}
@@ -139,23 +141,24 @@ public class MainActivity extends Activity {
 		Toast toast;
 		int duration = Toast.LENGTH_SHORT;
 		
-		toast = Toast.makeText(context, message/*output.toString()*/, duration);
+		toast = Toast.makeText(context, message, duration);
 		toast.show();
 	}
 	
 	
-	private class RecordTask extends AsyncTask<Integer, Void, Boolean> {
+	private class RecordTask extends AsyncTask<Integer, Void, Void> {
 	    /** The system calls this to perform work in a worker thread and
 	      * delivers it the parameters given to AsyncTask.execute() 
 	     * @return */
-	    protected Boolean doInBackground(Integer...integers) {
-	        return doRecord(integers[0]);
+	    protected Void doInBackground(Integer...integers) {
+	        doRecord(integers[0]);
+	        return null;
 	    }
 	    
 	    /** The system calls this to perform work in the UI thread and delivers
 	      * the result from doInBackground() */
-	    protected void onPostExecute(Boolean result) {
-	    	endRecord(result);
+	    protected void onPostExecute(Void result) {
+	    	endRecord();
 	    }
 	    
 
